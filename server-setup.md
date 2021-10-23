@@ -32,3 +32,6 @@ Tell Ubuntu to do nothing when the lid closes:
 sudo gedit /etc/systemd/logind.conf
 HandleLidSwitch=ignore – do nothing
 systemctl restart systemd-logind.service
+
+Update kubectl configuration on Windows:
+$ENV:KUBECONFIG="{0};{1}" -f  $ENV:KUBECONFIG, "$ENV:userprofile\.kube\config-<devel>"
