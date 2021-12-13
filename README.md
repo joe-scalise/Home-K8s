@@ -1,3 +1,5 @@
+# Work in Progress
+
 # Home-K8s
 
 Guide to move your self-hosted apps to Kubernetes.  I'm coming directly from Docker Swarm mode after several years of self-hosting successfully.
@@ -6,23 +8,24 @@ This guide uses MicroK8s installed on a Ubuntu 20.04 node.
 
 # Kubernetes Cheat Sheet
 
-Create traefik-values.yml file to hold the arguements for Traefik:
+To enable Let's Encrypt, create traefik-values.yml file to hold the arguements for Traefik:
 
 ```
 additionalArguments:
-  - "--certificatesresolvers.http-le.acme.email=${EMAIL}"
-  - "--certificatesresolvers.http-le.acme.storage=/data/acme.json"
-  - "--certificatesresolvers.http-le.acme.caserver=https://acme-v02.api.letsencrypt.org/directory"
-  - "--certificatesResolvers.http-le.acme.httpchallenge=true"
-  - "--certificatesResolvers.http-le.acme.httpchallenge.entrypoint=web"
-  - "--api.insecure=true"
-  - "--accesslog=true"
-  - "--log.level=WARN"
-  - "--serversTransport.insecureSkipVerify=true"
+  - --certificatesresolvers.letsencrypt.acme.tlschallenge=true
+  - --certificatesresolvers.letsencrypt.acme.email=youremail@domain.com
+  - --certificatesresolvers.letsencrypt.acme.storage=/data/letsencrypt.json
 ```
 
 helm upgrade --install traefik traefik/traefik --values traefik-values.yml -n traefik
 
+Verify the manifest updates the values above:
+
+helm get manifest traefik -n traefik
+
+Also, verify in the logs that you don't see any issues with Let's Encrypt:
+
+kubectl logs $(kubectl get pod -n traefik -o name) -n traefik
 
 Create a new file to hold all ingress rules for the applications you want Traefik to route to:
 
@@ -107,3 +110,7 @@ NAME    READY   UP-TO-DATE   AVAILABLE   AGE
 nginx   1/1     1            1           9d
   
 kubectl delete all -l app=nginx
+  
+## Execute inside the container, looks similar to Docker:
+  
+`kubectl exec -it $(kubectl get pod -n traefik -o name) -n traefik -- ls /data`
